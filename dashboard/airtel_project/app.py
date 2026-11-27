@@ -4,6 +4,7 @@
 Run:  pip install -r requirements.txt   ->   streamlit run airtel_streamlit_app.py
 Keep airtel.db in the same folder as this file."""
 import sqlite3
+import zipfile
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -66,8 +67,13 @@ LEFT JOIN (SELECT customer_id, MAX(usage_date) AS last_usage FROM usage_daily GR
 @st.cache_data
 def load(path=None):
     app_dir = Path(__file__).resolve().parent
+    local_db = app_dir / "airtel.db"
+    packaged_db = app_dir / "airtel.db.zip"
+    if not local_db.exists() and packaged_db.exists():
+        with zipfile.ZipFile(packaged_db, "r") as archive:
+            archive.extract("airtel.db", app_dir)
     candidates = [
-        Path(path) if path else app_dir / "airtel.db",
+        Path(path) if path else local_db,
         app_dir.parent.parent / "data" / "raw" / "airtel.db",
         app_dir.parent / "airtel.db",
     ]
